@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from numpy import linalg as LA
 
 
 def plot_degree_distribution(G,threshold,ax):
@@ -34,13 +35,13 @@ def compute_gamma(degree_sequence, k_min=1):
     filtered_degrees = [k for k in degree_sequence if k >= k_min]
     n = len(filtered_degrees)
     if n == 0:
-        raise ValueError("No degrees greater than or equal to k_min found in the data.")
+        return None
     sum_log = np.sum(np.log(np.array(filtered_degrees) / k_min))
     # Estimate gamma using the MLE formula
     gamma = 1 + n / sum_log
     return gamma
 
-def compute_network_distribution_property(G):
+def compute_network_distribution_property(G_weighted,G,adj_matrix):
     #Heterogeneity: Plot the heterogeneity vs num of layer
     #Gamma: Plot
     #Gamma without hub: Plot 
@@ -48,6 +49,13 @@ def compute_network_distribution_property(G):
     degs = np.array([d for _, d in G.degree()])
     k1 = degs.mean()
     k2 = np.mean(degs** 2)
+    if k1 == 0:
+        return None, None
     heterogenity = (k2 -  k1**2)/k1
     gamma = compute_gamma(degs, k_min=1) 
-    return heterogenity, gamma 
+    eigenvalues, _ = LA.eig(adj_matrix)
+
+    degree_matrix = np.diag(np.sum(adj_matrix, axis=1))
+    laplacian_matrix = degree_matrix - adj_matrix
+    lap_eigenvalues, _ = LA.eig(laplacian_matrix) 
+    return G_weighted.degree(weight='weight'),G.degree(),heterogenity, gamma, eigenvalues.tolist(), lap_eigenvalues.tolist()

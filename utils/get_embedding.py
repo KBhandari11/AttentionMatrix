@@ -15,10 +15,10 @@ def generate_embeddings(inputs, model,tokenizer, pca=False):
         generated_tokens = model.generate(
             input_ids=inputs['input_ids'],  
             attention_mask=inputs["attention_mask"],
-            max_length=50, 
+            max_new_tokens=100,
             num_return_sequences=1
         )
-        generated_text = tokenizer.batch_decode(sequences=generated_tokens, skip_special_tokens=False)  
+        generated_text = tokenizer.batch_decode(sequences=generated_tokens, skip_special_tokens=False)[0] 
     new_hidden_states_pca = []
     new_hidden_states =[]
     new_attention_states = []
